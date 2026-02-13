@@ -1,0 +1,32 @@
+# seed.yaml — Automation Contract for organvm-vii-kerygma/social-automation
+# Schema: seed/v1.0
+# Generated: 2026-02-12 (AUTONOMY Sprint)
+# Category: standard
+
+schema_version: "1.0"
+organ: VII
+organ_name: Marketing
+repo: social-automation
+org: organvm-vii-kerygma
+
+metadata:
+  implementation_status: PRODUCTION
+  tier: standard
+  promotion_status: LOCAL
+  last_validated: "2026-02-11"
+  generated: "2026-02-12"
+  sprint: "AUTONOMY"
+
+agents:
+  - name: ci
+    trigger: on_push
+    workflow: .github/workflows/ci-python.yml
+    description: "Continuous integration pipeline"
+
+subscriptions:
+  - event: essay.published
+    source: ORGAN-V
+    action: Trigger POSSE distribution workflow
+  - event: promotion.completed
+    source: ORGAN-IV
+    action: Draft announcement for promoted repo
