@@ -5,6 +5,10 @@ for Mastodon instances in the Fediverse.
 """
 
 from __future__ import annotations
+
+import json
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -32,13 +36,57 @@ class Toot:
 class MastodonClient:
     """Client for publishing and interacting with Mastodon."""
 
-    def __init__(self, config: MastodonConfig) -> None:
+    def __init__(self, config: MastodonConfig, live: bool = False) -> None:
         self.config = config
+        self._live = live
         self._posted: list[dict[str, Any]] = []
+
+    def _post_to_api(self, toot: Toot) -> dict[str, Any]:
+        """Send a toot to the Mastodon API via HTTP POST."""
+        url = f"{self.config.instance_url}/api/v1/statuses"
+        payload = {
+            "status": toot.content,
+            "visibility": toot.visibility,
+        }
+        if toot.spoiler_text:
+            payload["spoiler_text"] = toot.spoiler_text
+        if toot.media_ids:
+            payload["media_ids"] = toot.media_ids
+        if toot.in_reply_to:
+            payload["in_reply_to_id"] = toot.in_reply_to
+
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                "Authorization": f"Bearer {self.config.access_token}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"Mastodon API error {exc.code}: {body}"
+            ) from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(
+                f"Mastodon connection error: {exc.reason}"
+            ) from exc
 
     def post_toot(self, toot: Toot) -> dict[str, Any]:
         if not toot.validate():
             raise ValueError("Toot content exceeds character limit or is empty")
+
+        if self._live:
+            result = self._post_to_api(toot)
+            self._posted.append(result)
+            return result
+
         result = {
             "id": f"toot-{len(self._posted) + 1:06d}",
             "content": toot.content,
