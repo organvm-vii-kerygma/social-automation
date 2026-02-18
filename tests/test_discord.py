@@ -1,5 +1,5 @@
 """Tests for the discord module."""
-from src.discord import DiscordWebhook, DiscordEmbed
+from kerygma_social.discord import DiscordWebhook, DiscordEmbed
 
 
 def test_send_message():

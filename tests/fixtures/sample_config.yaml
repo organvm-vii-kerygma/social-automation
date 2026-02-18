@@ -1,0 +1,12 @@
+mastodon:
+  instance_url: "https://mastodon.test"
+  access_token: "test-token"
+  visibility: unlisted
+discord:
+  webhook_url: "https://discord.com/api/webhooks/test"
+bluesky:
+  handle: "test.bsky.social"
+  app_password: "test-password"
+delivery_log_path: "test_log.json"
+rss_feed_url: "https://example.com/feed.xml"
+live_mode: false

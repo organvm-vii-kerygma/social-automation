@@ -1,0 +1,12 @@
+mastodon:
+  instance_url: "https://mastodon.social"
+  access_token: ""  # or KERYGMA_MASTODON_ACCESS_TOKEN env var
+  visibility: public
+discord:
+  webhook_url: ""  # or KERYGMA_DISCORD_WEBHOOK_URL
+bluesky:
+  handle: ""
+  app_password: ""
+delivery_log_path: "delivery_log.json"
+rss_feed_url: "https://organvm-v-logos.github.io/public-process/feed.xml"
+live_mode: false

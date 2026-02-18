@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>organvm Public Process</title>
+  <link href="https://organvm-v-logos.github.io/public-process/" rel="alternate"/>
+  <link href="https://organvm-v-logos.github.io/public-process/feed.xml" rel="self"/>
+  <updated>2026-02-17T00:00:00Z</updated>
+  <id>https://organvm-v-logos.github.io/public-process/</id>
+  <entry>
+    <title>Orchestrating the Eight Organs</title>
+    <id>https://organvm-v-logos.github.io/public-process/essays/01-orchestrate.html</id>
+    <link href="https://organvm-v-logos.github.io/public-process/essays/01-orchestrate.html" rel="alternate"/>
+    <summary>How the eight organs coordinate across the creative-institutional system.</summary>
+    <published>2026-02-10T00:00:00Z</published>
+    <updated>2026-02-10T00:00:00Z</updated>
+  </entry>
+  <entry>
+    <title>Governance and Autonomy</title>
+    <id>https://organvm-v-logos.github.io/public-process/essays/02-governance.html</id>
+    <link href="https://organvm-v-logos.github.io/public-process/essays/02-governance.html" rel="alternate"/>
+    <summary>Balancing governance structures with creative autonomy.</summary>
+    <published>2026-02-11T00:00:00Z</published>
+    <updated>2026-02-11T00:00:00Z</updated>
+  </entry>
+</feed>

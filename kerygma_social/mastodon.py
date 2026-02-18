@@ -66,7 +66,7 @@ class MastodonClient:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
@@ -104,6 +104,38 @@ class MastodonClient:
             parts.append(hashtags)
         text = "\n".join(parts)
         return text[:self.config.max_chars]
+
+    def split_for_thread(self, text: str) -> list[str]:
+        """Split long text into thread-safe chunks respecting word boundaries."""
+        limit = self.config.max_chars
+        if len(text) <= limit:
+            return [text]
+
+        chunks: list[str] = []
+        while text:
+            if len(text) <= limit:
+                chunks.append(text)
+                break
+            # Find last space within limit
+            split_at = text.rfind(" ", 0, limit)
+            if split_at <= 0:
+                split_at = limit
+            chunks.append(text[:split_at].rstrip())
+            text = text[split_at:].lstrip()
+        return chunks
+
+    def post_thread(self, toots: list[Toot]) -> list[dict[str, Any]]:
+        """Post a thread (chain of reply toots)."""
+        results: list[dict[str, Any]] = []
+        reply_to: str | None = None
+
+        for toot in toots:
+            toot.in_reply_to = reply_to
+            result = self.post_toot(toot)
+            results.append(result)
+            reply_to = result.get("id")
+
+        return results
 
     @property
     def post_count(self) -> int:

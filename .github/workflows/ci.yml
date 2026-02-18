@@ -14,4 +14,4 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - run: python -m pytest tests/ -v
-      - run: python -m ruff check src/
+      - run: python -m ruff check kerygma_social/
