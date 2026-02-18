@@ -26,6 +26,9 @@ class SocialConfig:
     discord_webhook_url: str = ""
     bluesky_handle: str = ""
     bluesky_app_password: str = ""
+    ghost_api_url: str = ""
+    ghost_admin_api_key: str = ""
+    ghost_newsletter_slug: str = ""
     delivery_log_path: str = "delivery_log.json"
     rss_feed_url: str = ""
     live_mode: bool = False
@@ -40,6 +43,8 @@ def load_config(path: Path | None = None) -> SocialConfig:
       KERYGMA_DISCORD_WEBHOOK_URL → discord.webhook_url
       KERYGMA_BLUESKY_HANDLE → bluesky.handle
       KERYGMA_BLUESKY_APP_PASSWORD → bluesky.app_password
+      KERYGMA_GHOST_API_URL → ghost.api_url
+      KERYGMA_GHOST_ADMIN_API_KEY → ghost.admin_api_key
       KERYGMA_LIVE_MODE → live_mode
     """
     raw: dict[str, Any] = {}
@@ -49,6 +54,7 @@ def load_config(path: Path | None = None) -> SocialConfig:
     mastodon = raw.get("mastodon", {}) if isinstance(raw, dict) else {}
     discord = raw.get("discord", {}) if isinstance(raw, dict) else {}
     bluesky = raw.get("bluesky", {}) if isinstance(raw, dict) else {}
+    ghost = raw.get("ghost", {}) if isinstance(raw, dict) else {}
 
     cfg = SocialConfig(
         mastodon_instance_url=_env_or(
@@ -72,6 +78,15 @@ def load_config(path: Path | None = None) -> SocialConfig:
             "BLUESKY_APP_PASSWORD",
             bluesky.get("app_password", ""),
         ),
+        ghost_api_url=_env_or(
+            "GHOST_API_URL",
+            ghost.get("api_url", ""),
+        ),
+        ghost_admin_api_key=_env_or(
+            "GHOST_ADMIN_API_KEY",
+            ghost.get("admin_api_key", ""),
+        ),
+        ghost_newsletter_slug=ghost.get("newsletter_slug", ""),
         delivery_log_path=raw.get("delivery_log_path", "delivery_log.json")
         if isinstance(raw, dict) else "delivery_log.json",
         rss_feed_url=raw.get("rss_feed_url", "") if isinstance(raw, dict) else "",

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from kerygma_social.circuit_breaker import CircuitBreaker
     from kerygma_social.delivery_log import DeliveryLog
     from kerygma_social.discord import DiscordWebhook
+    from kerygma_social.ghost import GhostClient
     from kerygma_social.mastodon import MastodonClient
     from kerygma_social.rate_limiter import RateLimiter
     from kerygma_social.retry import RetryConfig
@@ -28,6 +29,7 @@ class Platform(Enum):
     MASTODON = "mastodon"
     DISCORD = "discord"
     BLUESKY = "bluesky"
+    GHOST = "ghost"
     RSS = "rss"
     TWITTER = "twitter"
 
@@ -90,6 +92,7 @@ class PosseDistributor:
         mastodon_client: MastodonClient | None = None,
         discord_webhook: DiscordWebhook | None = None,
         bluesky_client: BlueskyClient | None = None,
+        ghost_client: GhostClient | None = None,
         retry_config: RetryConfig | None = None,
         circuit_breakers: dict[str, CircuitBreaker] | None = None,
         rate_limiter: RateLimiter | None = None,
@@ -99,6 +102,7 @@ class PosseDistributor:
         self._mastodon = mastodon_client
         self._discord = discord_webhook
         self._bluesky = bluesky_client
+        self._ghost = ghost_client
         self._retry_config = retry_config
         self._circuit_breakers = circuit_breakers or {}
         self._rate_limiter = rate_limiter
@@ -221,6 +225,21 @@ class PosseDistributor:
             record.mark_failed(str(exc))
         return record
 
+    def _syndicate_ghost(self, post: ContentPost) -> SyndicationRecord:
+        record = SyndicationRecord(platform=Platform.GHOST)
+        ghost_post = self._ghost.format_for_ghost(
+            post.title, post.body, post.canonical_url,
+        )
+        try:
+            result = self._with_resilience(
+                "ghost", self._ghost.create_post, ghost_post,
+            )
+            url = result.get("url", f"https://ghost.example.com/{post.post_id}")
+            record.mark_published(url)
+        except Exception as exc:
+            record.mark_failed(str(exc))
+        return record
+
     def syndicate(self, post_id: str) -> list[SyndicationRecord]:
         post = self._posts[post_id]
         records: list[SyndicationRecord] = []
@@ -240,6 +259,8 @@ class PosseDistributor:
                 record = self._syndicate_discord(post)
             elif platform == Platform.BLUESKY and self._bluesky is not None:
                 record = self._syndicate_bluesky(post)
+            elif platform == Platform.GHOST and self._ghost is not None:
+                record = self._syndicate_ghost(post)
             else:
                 record = SyndicationRecord(platform=platform)
                 record.status = SyndicationStatus.SKIPPED
