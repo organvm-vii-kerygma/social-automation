@@ -9,10 +9,12 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import yaml
 
+if TYPE_CHECKING:
+    from kerygma_profiles.registry import ProjectProfile
 
 ENV_PREFIX = "KERYGMA_"
 
@@ -32,6 +34,32 @@ class SocialConfig:
     delivery_log_path: str = "delivery_log.json"
     rss_feed_url: str = ""
     live_mode: bool = False
+
+    @classmethod
+    def from_profile(
+        cls,
+        profile: ProjectProfile,
+        resolve: Callable[[str], str],
+    ) -> SocialConfig:
+        """Build a SocialConfig from a ProjectProfile, resolving secret references."""
+        platforms = profile.platforms
+        mastodon = platforms.get("mastodon", {})
+        discord = platforms.get("discord", {})
+        bluesky = platforms.get("bluesky", {})
+        ghost = platforms.get("ghost", {})
+
+        return cls(
+            mastodon_instance_url=mastodon.get("instance_url", ""),
+            mastodon_access_token=resolve(mastodon.get("access_token", "")),
+            mastodon_visibility=mastodon.get("visibility", "public"),
+            discord_webhook_url=resolve(discord.get("webhook_url", "")),
+            bluesky_handle=bluesky.get("handle", ""),
+            bluesky_app_password=resolve(bluesky.get("app_password", "")),
+            ghost_api_url=ghost.get("api_url", ""),
+            ghost_admin_api_key=resolve(ghost.get("admin_api_key", "")),
+            ghost_newsletter_slug=ghost.get("newsletter_slug", ""),
+            rss_feed_url=profile.rss_feed_url,
+        )
 
 
 def load_config(path: Path | None = None) -> SocialConfig:

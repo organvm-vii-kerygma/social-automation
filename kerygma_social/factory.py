@@ -1,4 +1,4 @@
-"""Factory for building a PosseDistributor from SocialConfig.
+"""Factory for building a PosseDistributor from SocialConfig or ProjectProfile.
 
 Shared by the social-automation CLI and the kerygma-pipeline orchestrator
 to avoid duplicated client construction logic.
@@ -7,6 +7,7 @@ to avoid duplicated client construction logic.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING, Callable
 
 from kerygma_social.bluesky import BlueskyClient, BlueskyConfig
 from kerygma_social.config import SocialConfig
@@ -15,6 +16,9 @@ from kerygma_social.discord import DiscordWebhook
 from kerygma_social.ghost import GhostClient, GhostConfig
 from kerygma_social.mastodon import MastodonClient, MastodonConfig
 from kerygma_social.posse import PosseDistributor
+
+if TYPE_CHECKING:
+    from kerygma_profiles.registry import ProjectProfile
 
 
 def build_distributor(
@@ -75,3 +79,25 @@ def build_distributor(
         ghost_client=ghost,
         delivery_log=delivery_log,
     )
+
+
+def build_distributor_for_profile(
+    profile: ProjectProfile,
+    resolve_secret: Callable[[str], str],
+    delivery_log: DeliveryLog | None = None,
+    live: bool = False,
+) -> PosseDistributor:
+    """Build a PosseDistributor from a ProjectProfile with resolved credentials.
+
+    Args:
+        profile: Project profile containing platform configs with secret refs.
+        resolve_secret: Callable that resolves op://, env://, or literal values.
+        delivery_log: Optional pre-built delivery log.
+        live: Whether to enable live API calls (default: dry-run).
+
+    Returns:
+        A fully wired PosseDistributor with profile-specific credentials.
+    """
+    cfg = SocialConfig.from_profile(profile, resolve_secret)
+    cfg.live_mode = live
+    return build_distributor(cfg, delivery_log=delivery_log)

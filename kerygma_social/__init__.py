@@ -9,7 +9,7 @@ __version__ = "0.3.0"
 from kerygma_social.posse import PosseDistributor, Platform, ContentPost, SyndicationRecord
 from kerygma_social.delivery_log import DeliveryLog, DeliveryRecord
 from kerygma_social.config import load_config, SocialConfig
-from kerygma_social.factory import build_distributor
+from kerygma_social.factory import build_distributor, build_distributor_for_profile
 
 __all__ = [
     "PosseDistributor",
@@ -21,4 +21,5 @@ __all__ = [
     "load_config",
     "SocialConfig",
     "build_distributor",
+    "build_distributor_for_profile",
 ]
