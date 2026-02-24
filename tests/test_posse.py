@@ -97,7 +97,7 @@ class TestWithResilience:
     def test_delivery_log_records_failure(self):
         """Failed syndication should be recorded in delivery log."""
         from kerygma_social.delivery_log import DeliveryLog
-        from kerygma_social.mastodon import MastodonClient, MastodonConfig, Toot
+        from kerygma_social.mastodon import MastodonClient, MastodonConfig
 
         log = DeliveryLog()
         client = MastodonClient(MastodonConfig(instance_url="https://m.test", access_token="t"))

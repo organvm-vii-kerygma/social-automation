@@ -10,7 +10,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -23,7 +22,7 @@ from kerygma_social.delivery_log import DeliveryLog
 def cmd_dispatch(cfg: SocialConfig, title: str, url: str, platforms: list[str]) -> None:
     dist = build_distributor(cfg)
     platform_list = [Platform(p) for p in platforms]
-    post = dist.create_post("cli-dispatch", title, "", url, platform_list)
+    dist.create_post("cli-dispatch", title, "", url, platform_list)
     records = dist.syndicate("cli-dispatch")
 
     for r in records:

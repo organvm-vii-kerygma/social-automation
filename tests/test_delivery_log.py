@@ -1,6 +1,5 @@
 """Tests for the delivery log module."""
 
-from pathlib import Path
 
 from kerygma_social.delivery_log import DeliveryLog, DeliveryRecord
 

@@ -1,9 +1,8 @@
 """Tests for the config module."""
 
-import os
 from pathlib import Path
 
-from kerygma_social.config import load_config, SocialConfig
+from kerygma_social.config import load_config
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
