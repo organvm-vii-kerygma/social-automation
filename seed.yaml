@@ -23,6 +23,19 @@ agents:
     workflow: .github/workflows/ci-python.yml
     description: "Continuous integration pipeline"
 
+produces:
+  - type: delivery_log
+    description: "Delivery log schema and POSSE distribution manifest"
+    consumers: [ORGAN-IV]
+
+data_artifacts:
+  - path: data/delivery-log.json
+    type: delivery_log
+    description: "Record schema, status/platform enums, sample record"
+  - path: data/posse-manifest.json
+    type: delivery_log
+    description: "POSSE pattern, platforms, resilience stack, config"
+
 subscriptions:
   - event: essay.published
     source: ORGAN-V

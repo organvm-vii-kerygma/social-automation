@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-02-24T14:21:50.738712+00:00",
+  "organ": "VII",
+  "organ_name": "Kerygma",
+  "repo": "social-automation",
+  "pattern": "POSSE (Publish Own Site, Syndicate Everywhere)",
+  "description": "Content authored on canonical site, syndicated to external platforms with back-links",
+  "platforms": [
+    {
+      "platform": "mastodon",
+      "env_vars": [
+        "KERYGMA_MASTODON_INSTANCE_URL",
+        "KERYGMA_MASTODON_ACCESS_TOKEN"
+      ],
+      "features": [
+        "threading",
+        "visibility_control",
+        "media_attachments"
+      ],
+      "module": "kerygma_social.mastodon"
+    },
+    {
+      "platform": "discord",
+      "env_vars": [
+        "KERYGMA_DISCORD_WEBHOOK_URL"
+      ],
+      "features": [
+        "embeds",
+        "color_coding",
+        "fields"
+      ],
+      "module": "kerygma_social.discord"
+    },
+    {
+      "platform": "bluesky",
+      "env_vars": [
+        "KERYGMA_BLUESKY_HANDLE",
+        "KERYGMA_BLUESKY_APP_PASSWORD"
+      ],
+      "features": [
+        "at_protocol",
+        "word_boundary_truncation"
+      ],
+      "module": "kerygma_social.bluesky"
+    },
+    {
+      "platform": "ghost",
+      "env_vars": [
+        "KERYGMA_GHOST_API_URL",
+        "KERYGMA_GHOST_ADMIN_API_KEY"
+      ],
+      "features": [
+        "html_content",
+        "newsletters",
+        "drafts"
+      ],
+      "module": "kerygma_social.ghost"
+    },
+    {
+      "platform": "rss",
+      "env_vars": [],
+      "features": [
+        "feed_polling"
+      ],
+      "module": null
+    },
+    {
+      "platform": "twitter",
+      "env_vars": [],
+      "features": [
+        "deprecated"
+      ],
+      "module": null
+    }
+  ],
+  "resilience_stack": [
+    {
+      "layer": "rate_limiter",
+      "module": "kerygma_social.rate_limiter",
+      "pattern": "Token bucket"
+    },
+    {
+      "layer": "circuit_breaker",
+      "module": "kerygma_social.circuit_breaker",
+      "pattern": "Three-state machine (CLOSED -> OPEN -> HALF_OPEN)"
+    },
+    {
+      "layer": "retry",
+      "module": "kerygma_social.retry",
+      "pattern": "Exponential backoff with jitter"
+    },
+    {
+      "layer": "delivery_log",
+      "module": "kerygma_social.delivery_log",
+      "pattern": "JSON file-backed persistence with deduplication"
+    }
+  ],
+  "rss_polling": {
+    "config_key": "rss_feed_url",
+    "description": "RSS feed URL for polling new content"
+  },
+  "config_fields": [
+    "mastodon_instance_url",
+    "mastodon_access_token",
+    "mastodon_visibility",
+    "discord_webhook_url",
+    "bluesky_handle",
+    "bluesky_app_password",
+    "ghost_api_url",
+    "ghost_admin_api_key",
+    "ghost_newsletter_slug",
+    "delivery_log_path",
+    "rss_feed_url",
+    "live_mode"
+  ],
+  "deduplication": {
+    "method": "delivery_log.has_been_delivered(post_id, platform)",
+    "description": "Skip syndication if post already delivered to platform"
+  }
+}

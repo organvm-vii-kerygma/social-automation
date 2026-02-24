@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-02-24T14:21:50.738406+00:00",
+  "organ": "VII",
+  "organ_name": "Kerygma",
+  "repo": "social-automation",
+  "record_format": "DeliveryRecord",
+  "fields": [
+    {
+      "field": "record_id",
+      "type": "string",
+      "description": "Unique record identifier"
+    },
+    {
+      "field": "post_id",
+      "type": "string",
+      "description": "ID of the syndicated post"
+    },
+    {
+      "field": "platform",
+      "type": "string",
+      "description": "Target platform name"
+    },
+    {
+      "field": "status",
+      "type": "string",
+      "description": "Delivery outcome"
+    },
+    {
+      "field": "timestamp",
+      "type": "string",
+      "description": "ISO 8601 timestamp"
+    },
+    {
+      "field": "external_url",
+      "type": "string",
+      "description": "URL on target platform"
+    },
+    {
+      "field": "error",
+      "type": "string",
+      "description": "Error message if failed"
+    },
+    {
+      "field": "metadata",
+      "type": "object",
+      "description": "Additional metadata"
+    }
+  ],
+  "syndication_statuses": [
+    "pending",
+    "published",
+    "failed",
+    "skipped"
+  ],
+  "delivery_statuses": [
+    "success",
+    "failure",
+    "skipped"
+  ],
+  "platforms": [
+    "mastodon",
+    "discord",
+    "bluesky",
+    "ghost",
+    "rss",
+    "twitter"
+  ],
+  "sample_record": {
+    "record_id": "essay-001-mastodon",
+    "post_id": "essay-001",
+    "platform": "mastodon",
+    "status": "success",
+    "timestamp": "2026-02-24T12:00:00",
+    "external_url": "https://mastodon.social/@organvm/123456",
+    "error": "",
+    "metadata": {}
+  }
+}

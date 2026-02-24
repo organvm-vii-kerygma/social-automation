@@ -4,7 +4,7 @@ Part of ORGAN VII (Kerygma) — the marketing and distribution layer
 of the eight-organ creative-institutional system.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from kerygma_social.posse import PosseDistributor, Platform, ContentPost, SyndicationRecord
 from kerygma_social.delivery_log import DeliveryLog, DeliveryRecord
