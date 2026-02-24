@@ -9,16 +9,13 @@ split as {id}:{secret} and signed into a short-lived token.
 
 from __future__ import annotations
 
-import hashlib
-import hmac
 import json
-import math
-import time
 import urllib.error
 import urllib.request
-from base64 import urlsafe_b64decode, urlsafe_b64encode
 from dataclasses import dataclass, field
 from typing import Any
+
+from kerygma_social.ghost_jwt import build_ghost_jwt
 
 
 @dataclass
@@ -46,38 +43,8 @@ class GhostClient:
         self._posted: list[dict[str, Any]] = []
 
     def _build_jwt(self) -> str:
-        """Build an HS256 JWT for Ghost Admin API authentication.
-
-        The admin_api_key is "{id}:{secret}" — the id becomes the kid header,
-        and the hex-decoded secret is the HMAC signing key.
-        """
-        parts = self.config.admin_api_key.split(":")
-        if len(parts) != 2:
-            raise ValueError("Ghost admin_api_key must be in {id}:{secret} format")
-        key_id, secret_hex = parts
-
-        # Header
-        header = {"alg": "HS256", "typ": "JWT", "kid": key_id}
-
-        # Payload — 5 minute expiry, /admin/ audience
-        now = int(time.time())
-        payload = {
-            "iat": now,
-            "exp": now + 300,
-            "aud": "/admin/",
-        }
-
-        def _b64(data: bytes) -> str:
-            return urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
-
-        header_b64 = _b64(json.dumps(header, separators=(",", ":")).encode())
-        payload_b64 = _b64(json.dumps(payload, separators=(",", ":")).encode())
-
-        signing_input = f"{header_b64}.{payload_b64}"
-        secret_bytes = bytes.fromhex(secret_hex)
-        signature = hmac.new(secret_bytes, signing_input.encode(), hashlib.sha256).digest()
-
-        return f"{signing_input}.{_b64(signature)}"
+        """Build an HS256 JWT for Ghost Admin API authentication."""
+        return build_ghost_jwt(self.config.admin_api_key)
 
     def create_post(self, post: GhostPost) -> dict[str, Any]:
         """Create a post on Ghost (live or mock)."""

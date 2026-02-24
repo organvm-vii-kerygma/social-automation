@@ -91,6 +91,17 @@ class TestRetry:
             raise ValueError("specific error")
 
         with pytest.raises(RetryError) as exc_info:
-            retry(fail, RetryConfig(max_attempts=1), sleep_func=lambda _: None)
+            retry(fail, RetryConfig(max_attempts=1, retryable_exceptions=(ValueError,)), sleep_func=lambda _: None)
         assert isinstance(exc_info.value.last_error, ValueError)
         assert "specific error" in str(exc_info.value.last_error)
+
+    def test_non_retryable_exception_propagates_immediately(self):
+        attempts = []
+
+        def fail_with_value_error():
+            attempts.append(1)
+            raise ValueError("not retryable")
+
+        with pytest.raises(ValueError, match="not retryable"):
+            retry(fail_with_value_error, RetryConfig(max_attempts=3), sleep_func=lambda _: None)
+        assert len(attempts) == 1  # No retries for non-retryable exceptions

@@ -22,6 +22,7 @@ class RetryConfig:
     max_delay: float = 30.0
     multiplier: float = 2.0
     jitter: bool = True
+    retryable_exceptions: tuple[type[Exception], ...] = (RuntimeError, OSError, ConnectionError)
 
 
 class RetryError(Exception):
@@ -61,14 +62,16 @@ def retry(
     for attempt in range(1, cfg.max_attempts + 1):
         try:
             return func(*args, **kwargs)
-        except Exception as exc:
+        except cfg.retryable_exceptions as exc:
             last_exc = exc
             if attempt == cfg.max_attempts:
                 break
+        except Exception:
+            raise
 
-            delay = min(cfg.base_delay * (cfg.multiplier ** (attempt - 1)), cfg.max_delay)
-            if cfg.jitter:
-                delay = delay * (0.5 + random.random() * 0.5)
-            do_sleep(delay)
+        delay = min(cfg.base_delay * (cfg.multiplier ** (attempt - 1)), cfg.max_delay)
+        if cfg.jitter:
+            delay = delay * (0.5 + random.random() * 0.5)
+        do_sleep(delay)
 
     raise RetryError(cfg.max_attempts, last_exc)  # type: ignore[arg-type]

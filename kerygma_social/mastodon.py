@@ -29,8 +29,8 @@ class Toot:
     media_ids: list[str] = field(default_factory=list)
     in_reply_to: str | None = None
 
-    def validate(self) -> bool:
-        return 0 < len(self.content) <= 500
+    def validate(self, max_chars: int = 500) -> bool:
+        return 0 < len(self.content) <= max_chars
 
 
 class MastodonClient:
@@ -79,7 +79,7 @@ class MastodonClient:
             ) from exc
 
     def post_toot(self, toot: Toot) -> dict[str, Any]:
-        if not toot.validate():
+        if not toot.validate(max_chars=self.config.max_chars):
             raise ValueError("Toot content exceeds character limit or is empty")
 
         if self._live:

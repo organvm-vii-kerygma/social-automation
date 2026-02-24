@@ -179,25 +179,67 @@ class PosseDistributor:
 
         record = SyndicationRecord(platform=Platform.MASTODON)
         text = self._mastodon.format_for_mastodon(post.title, post.canonical_url)
-        toot = Toot(content=text)
-        try:
-            result = self._with_resilience(
-                "mastodon", self._mastodon.post_toot, toot,
-            )
-            url = result.get("url", f"https://mastodon.example.com/{post.post_id}")
-            record.mark_published(url)
-        except Exception as exc:
-            record.mark_failed(str(exc))
+
+        # Use threading for long content that exceeds the character limit
+        if len(text) > self._mastodon.config.max_chars:
+            chunks = self._mastodon.split_for_thread(text)
+            toots = [Toot(content=chunk) for chunk in chunks]
+            try:
+                results = self._with_resilience(
+                    "mastodon", self._mastodon.post_thread, toots,
+                )
+                urls = [r.get("url", "") for r in results if r.get("url")]
+                url = urls[0] if urls else f"https://mastodon.example.com/{post.post_id}"
+                record.mark_published(url)
+            except Exception as exc:
+                record.mark_failed(str(exc))
+        else:
+            toot = Toot(content=text)
+            try:
+                result = self._with_resilience(
+                    "mastodon", self._mastodon.post_toot, toot,
+                )
+                url = result.get("url", f"https://mastodon.example.com/{post.post_id}")
+                record.mark_published(url)
+            except Exception as exc:
+                record.mark_failed(str(exc))
         return record
 
     def _syndicate_discord(self, post: ContentPost) -> SyndicationRecord:
         from kerygma_social.discord import DiscordEmbed
 
         record = SyndicationRecord(platform=Platform.DISCORD)
+
+        # Build richer embed: split body into title line + description,
+        # use category-based color, add timestamp
+        lines = post.body.strip().split("\n", 1)
+        embed_title = lines[0].strip() if lines else post.title
+        embed_desc = lines[1].strip() if len(lines) > 1 else post.body[:200]
+
+        # Category-based embed colors
+        category_colors = {
+            "launch": 0x2ECC71,        # green
+            "release": 0x3498DB,       # blue
+            "essay": 0xF1C40F,         # gold
+            "community": 0x9B59B6,     # purple
+            "institutional": 0x95A5A6, # gray
+        }
+        color = 0x5865F2  # default Discord blurple
+        for category, cat_color in category_colors.items():
+            if category in post.title.lower() or category in post.body[:100].lower():
+                color = cat_color
+                break
+
         embed = DiscordEmbed(
-            title=post.title,
-            description=post.body[:200],
+            title=embed_title,
+            description=embed_desc[:4096],
             url=post.canonical_url,
+            color=color,
+        )
+        embed.add_field(
+            name="Published",
+            value=datetime.now().strftime("%Y-%m-%d %H:%M UTC"),
+            inline=True,
         )
         try:
             result = self._with_resilience(

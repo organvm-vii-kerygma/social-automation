@@ -22,7 +22,7 @@ class DiscordEmbed:
     fields: list[dict[str, str]] = field(default_factory=list)
 
     def add_field(self, name: str, value: str, inline: bool = False) -> None:
-        self.fields.append({"name": name, "value": value, "inline": str(inline).lower()})
+        self.fields.append({"name": name, "value": value, "inline": inline})
 
     def to_payload(self) -> dict[str, Any]:
         payload: dict[str, Any] = {

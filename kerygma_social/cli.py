@@ -15,50 +15,13 @@ import sys
 from pathlib import Path
 
 from kerygma_social.config import load_config, SocialConfig
-from kerygma_social.mastodon import MastodonClient, MastodonConfig
-from kerygma_social.discord import DiscordWebhook
-from kerygma_social.bluesky import BlueskyClient, BlueskyConfig
-from kerygma_social.posse import PosseDistributor, Platform
+from kerygma_social.factory import build_distributor
+from kerygma_social.posse import Platform
 from kerygma_social.delivery_log import DeliveryLog
 
 
-def _build_distributor(cfg: SocialConfig) -> PosseDistributor:
-    """Build a PosseDistributor from config."""
-    mastodon = None
-    if cfg.mastodon_instance_url:
-        mastodon = MastodonClient(
-            MastodonConfig(
-                instance_url=cfg.mastodon_instance_url,
-                access_token=cfg.mastodon_access_token,
-                visibility=cfg.mastodon_visibility,
-            ),
-            live=cfg.live_mode,
-        )
-
-    discord = None
-    if cfg.discord_webhook_url:
-        discord = DiscordWebhook(cfg.discord_webhook_url, live=cfg.live_mode)
-
-    bluesky = None
-    if cfg.bluesky_handle:
-        bluesky = BlueskyClient(
-            BlueskyConfig(handle=cfg.bluesky_handle, app_password=cfg.bluesky_app_password),
-            live=cfg.live_mode,
-        )
-
-    log_path = Path(cfg.delivery_log_path) if cfg.delivery_log_path else None
-    delivery_log = DeliveryLog(log_path)
-
-    return PosseDistributor(
-        mastodon_client=mastodon,
-        discord_webhook=discord,
-        bluesky_client=bluesky,
-        delivery_log=delivery_log,
-    )
-
-
 def cmd_dispatch(cfg: SocialConfig, title: str, url: str, platforms: list[str]) -> None:
-    dist = _build_distributor(cfg)
+    dist = build_distributor(cfg)
     platform_list = [Platform(p) for p in platforms]
     post = dist.create_post("cli-dispatch", title, "", url, platform_list)
     records = dist.syndicate("cli-dispatch")

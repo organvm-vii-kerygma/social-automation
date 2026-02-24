@@ -34,8 +34,9 @@ class DeliveryRecord:
 class DeliveryLog:
     """JSON file-backed delivery log."""
 
-    def __init__(self, path: Path | None = None) -> None:
+    def __init__(self, path: Path | None = None, max_records: int = 0) -> None:
         self._path = path
+        self._max_records = max_records
         self._records: list[DeliveryRecord] = []
         if path and path.exists():
             self._load()
@@ -54,7 +55,11 @@ class DeliveryLog:
     def _save(self) -> None:
         if not self._path:
             return
-        data = {"records": [asdict(r) for r in self._records]}
+        records = self._records
+        if self._max_records > 0 and len(records) > self._max_records:
+            records = records[-self._max_records:]
+            self._records = records
+        data = {"records": [asdict(r) for r in records]}
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
         os.replace(str(tmp), str(self._path))

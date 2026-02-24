@@ -52,3 +52,16 @@ class TestDeliveryLog:
     def test_auto_timestamp(self):
         rec = DeliveryRecord(record_id="r1", post_id="p1", platform="mastodon", status="success")
         assert len(rec.timestamp) > 0
+
+    def test_max_records_trims_oldest(self, tmp_path):
+        path = tmp_path / "log.json"
+        log = DeliveryLog(path, max_records=3)
+        for i in range(5):
+            log.append(DeliveryRecord(
+                record_id=f"r{i}", post_id=f"p{i}", platform="mastodon", status="success",
+            ))
+        assert log.total_records == 3
+        # Oldest records (r0, r1) should have been trimmed
+        assert log.get_by_post("p0") == []
+        assert log.get_by_post("p1") == []
+        assert len(log.get_by_post("p4")) == 1

@@ -23,3 +23,12 @@ def test_embed_add_field():
     assert len(embed.fields) == 1
     payload = embed.to_payload()
     assert "fields" in payload
+
+
+def test_embed_field_inline_is_bool():
+    """Discord API expects inline as a boolean, not a string."""
+    embed = DiscordEmbed(title="T", description="D")
+    embed.add_field("key", "value", inline=True)
+    assert embed.fields[0]["inline"] is True
+    embed.add_field("key2", "value2", inline=False)
+    assert embed.fields[1]["inline"] is False

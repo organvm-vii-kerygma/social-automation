@@ -17,6 +17,28 @@ def test_toot_validation():
     assert empty.validate() is False
 
 
+def test_toot_validation_respects_custom_max_chars():
+    """Toot.validate() should respect instance-specific char limits."""
+    toot = Toot(content="A" * 600)
+    assert toot.validate(max_chars=500) is False
+    assert toot.validate(max_chars=1000) is True
+
+
+def test_post_toot_uses_config_max_chars():
+    """MastodonClient.post_toot() should validate against config.max_chars."""
+    client = MastodonClient(MastodonConfig(
+        instance_url="https://mastodon.social", access_token="test", max_chars=100,
+    ))
+    short_toot = Toot(content="A" * 50)
+    result = client.post_toot(short_toot)
+    assert "id" in result
+
+    import pytest
+    long_toot = Toot(content="A" * 150)
+    with pytest.raises(ValueError, match="character limit"):
+        client.post_toot(long_toot)
+
+
 def test_format_for_mastodon():
     client = MastodonClient(MastodonConfig(instance_url="https://mastodon.social", access_token="test"))
     text = client.format_for_mastodon("New Essay", "https://example.com/essay", ["writing", "organvm"])

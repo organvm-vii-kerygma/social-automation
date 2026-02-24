@@ -38,10 +38,13 @@ class RssPoller:
         feed_url: str = "",
         seen_path: Path | None = None,
         fetch_func: Any | None = None,
+        max_seen: int = 5000,
     ) -> None:
         self._feed_url = feed_url
         self._seen_path = seen_path
         self._seen: set[str] = set()
+        self._seen_order: list[str] = []  # Insertion order for pruning
+        self._max_seen = max_seen
         self._fetch = fetch_func  # Injectable for testing
         if seen_path and seen_path.exists():
             self._load_seen()
@@ -51,14 +54,21 @@ class RssPoller:
             return
         try:
             data = json.loads(self._seen_path.read_text(encoding="utf-8"))
-            self._seen = set(data.get("seen_ids", []))
+            ids = data.get("seen_ids", [])
+            self._seen_order = list(ids)
+            self._seen = set(ids)
         except (json.JSONDecodeError, TypeError):
             self._seen = set()
+            self._seen_order = []
 
     def _save_seen(self) -> None:
         if not self._seen_path:
             return
-        data = {"seen_ids": sorted(self._seen)}
+        # Prune to max_seen most recent entries
+        if self._max_seen > 0 and len(self._seen_order) > self._max_seen:
+            self._seen_order = self._seen_order[-self._max_seen:]
+            self._seen = set(self._seen_order)
+        data = {"seen_ids": self._seen_order}
         tmp = self._seen_path.with_suffix(".tmp")
         tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
         os.replace(str(tmp), str(self._seen_path))
@@ -117,12 +127,15 @@ class RssPoller:
 
         for entry in new_entries:
             self._seen.add(entry.entry_id)
+            self._seen_order.append(entry.entry_id)
 
         self._save_seen()
         return new_entries
 
     def mark_seen(self, entry_id: str) -> None:
-        self._seen.add(entry_id)
+        if entry_id not in self._seen:
+            self._seen.add(entry_id)
+            self._seen_order.append(entry_id)
         self._save_seen()
 
     @property

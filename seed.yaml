@@ -12,8 +12,8 @@ org: organvm-vii-kerygma
 metadata:
   implementation_status: PRODUCTION
   tier: standard
-  promotion_status: LOCAL
-  last_validated: "2026-02-11"
+  promotion_status: GRADUATED
+  last_validated: "2026-02-18"
   generated: "2026-02-12"
   sprint: "AUTONOMY"
 
