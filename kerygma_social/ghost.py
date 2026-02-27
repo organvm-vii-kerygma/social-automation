@@ -32,6 +32,7 @@ class GhostPost:
     status: str = "draft"  # "draft" or "published"
     tags: list[str] = field(default_factory=list)
     excerpt: str = ""
+    visibility: str = "public"  # "public", "members", or "paid"
 
 
 class GhostClient:
@@ -55,6 +56,7 @@ class GhostClient:
             "id": f"mock-ghost-{len(self._posted) + 1}",
             "title": post.title,
             "status": post.status,
+            "visibility": post.visibility,
             "url": f"{self.config.api_url}/mock-post-{len(self._posted) + 1}/",
         }
         self._posted.append(result)
@@ -70,6 +72,7 @@ class GhostClient:
                 "title": post.title,
                 "html": post.html,
                 "status": post.status,
+                "visibility": post.visibility,
             }],
         }
         if post.tags:

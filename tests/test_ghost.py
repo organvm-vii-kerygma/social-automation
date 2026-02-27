@@ -90,6 +90,28 @@ class TestGhost:
         )
         assert result["status"] == "published"
 
+    def test_visibility_default(self):
+        post = GhostPost(title="Public", html="<p>Hello</p>")
+        assert post.visibility == "public"
+
+    def test_visibility_paid(self):
+        client = self._client()
+        post = GhostPost(
+            title="Paid Content", html="<p>Premium</p>",
+            visibility="paid"
+        )
+        result = client.create_post(post)
+        assert result["visibility"] == "paid"
+
+    def test_visibility_members(self):
+        client = self._client()
+        post = GhostPost(
+            title="Members Only", html="<p>Exclusive</p>",
+            visibility="members"
+        )
+        result = client.create_post(post)
+        assert result["visibility"] == "members"
+
     def test_config_defaults(self):
         config = GhostConfig(admin_api_key="a:b", api_url="https://x.com")
         assert config.newsletter_slug == ""
