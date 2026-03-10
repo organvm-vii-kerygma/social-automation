@@ -1,0 +1,8 @@
+schema_version: '1.0'
+repo: social-automation
+organ: VII
+display_name: 'POSSE distribution backend: Mastodon, Discord, Bluesky, Ghost adapters
+  with live/mock modes, JWT auth, delivery log, RSS poller, 75 tests'
+delivery:
+- platform: web_app
+  status: not_started
