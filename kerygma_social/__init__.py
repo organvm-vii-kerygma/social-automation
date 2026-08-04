@@ -10,6 +10,7 @@ from kerygma_social.posse import PosseDistributor, Platform, ContentPost, Syndic
 from kerygma_social.delivery_log import DeliveryLog, DeliveryRecord
 from kerygma_social.config import load_config, SocialConfig
 from kerygma_social.factory import build_distributor, build_distributor_for_profile
+from kerygma_social.linkedin import LinkedInAction, send_linkedin_action
 
 __all__ = [
     "PosseDistributor",
@@ -22,4 +23,6 @@ __all__ = [
     "SocialConfig",
     "build_distributor",
     "build_distributor_for_profile",
+    "LinkedInAction",
+    "send_linkedin_action",
 ]

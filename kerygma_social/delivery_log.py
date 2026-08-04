@@ -17,6 +17,7 @@ from typing import Any
 @dataclass
 class DeliveryRecord:
     """A single delivery attempt."""
+
     record_id: str
     post_id: str
     platform: str
@@ -46,9 +47,7 @@ class DeliveryLog:
             return
         try:
             data = json.loads(self._path.read_text(encoding="utf-8"))
-            self._records = [
-                DeliveryRecord(**rec) for rec in data.get("records", [])
-            ]
+            self._records = [DeliveryRecord(**rec) for rec in data.get("records", [])]
         except (json.JSONDecodeError, TypeError):
             self._records = []
 
@@ -57,7 +56,7 @@ class DeliveryLog:
             return
         records = self._records
         if self._max_records > 0 and len(records) > self._max_records:
-            records = records[-self._max_records:]
+            records = records[-self._max_records :]
             self._records = records
         data = {"records": [asdict(r) for r in records]}
         tmp = self._path.with_suffix(".tmp")
@@ -81,6 +80,25 @@ class DeliveryLog:
         return any(
             r.post_id == post_id and r.platform == platform and r.status == "success"
             for r in self._records
+        )
+
+    def has_been_delivered_action(
+        self,
+        *,
+        account: str,
+        profile_id: str,
+        action: str,
+        obligation_id: str,
+    ) -> bool:
+        """Return whether this exact account/profile/action obligation succeeded."""
+        return any(
+            record.platform == "linkedin"
+            and record.status == "success"
+            and record.metadata.get("account") == account
+            and record.metadata.get("profile_id") == profile_id
+            and record.metadata.get("action") == action
+            and record.metadata.get("obligation_id") == obligation_id
+            for record in self._records
         )
 
     @property
