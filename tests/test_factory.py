@@ -29,8 +29,8 @@ class TestBuildDistributor:
 class TestBuildDistributorForProfile:
     def _make_profile(self, platforms=None):
         """Create a minimal ProjectProfile-like object for testing."""
-        from kerygma_profiles.registry import ProjectProfile
-        return ProjectProfile(
+        from types import SimpleNamespace
+        return SimpleNamespace(
             profile_id="test",
             display_name="Test Profile",
             organ=None,
@@ -39,6 +39,7 @@ class TestBuildDistributorForProfile:
             platforms=platforms or {},
             channels=[],
             calendar_events=[],
+            rss_feed_url="",
         )
 
     def test_build_from_profile_empty(self):
